@@ -68,7 +68,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
 
         
-        self.demoView = DemoView(frame: CGRect(x: self.view.frame.size.width/2, y: self.view.frame.size.height/2, width: 150, height: 150))
+        self.demoView = DemoView(frame: CGRect(x: self.view.frame.size.width/2, y: self.view.frame.size.height/2, width: 75, height: 75))
         
         
         
@@ -169,22 +169,23 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         var x = 0
         let image = pupil.image
 
-        let frameSquare = UIView(frame: demoView.convert(demoView.bounds, to: pupil.inputView)) //UI View out of square's location on image frame
-        let Xmin = Int(frameSquare.frame.minX)
-        let Ymin = Int(frameSquare.frame.minY)
-        let Xmax = Int(frameSquare.frame.maxX)
-        let Ymax = Int(frameSquare.frame.maxY)
-        let radius = Int(frameSquare.frame.size.width)/2
+        //let frameSquare = UIView(frame: demoView.convert(demoView.bounds, to: pupil.inputView)) //UI View out of square's location on image frame
+        let Xmin = CGFloat(demoView.frame.minX)
+        let Ymin = CGFloat(demoView.frame.minY)
+        let Xmax = CGFloat(demoView.frame.maxX)
+        let Ymax = CGFloat(demoView.frame.maxY)
+        let radius = CGFloat(demoView.frame.size.width)/2
 //        let Xmin = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).minX)
 //        let Ymin = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).minY)
 //        let Xmax = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).maxX)
 //        let Ymax = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).maxY)
 //        let radius = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).size.width)/2
-        print(Xmin, Ymin, Xmax, Ymax)
+        print(Xmin, Ymin, Xmax, Ymax, radius)
         
-        let xCenter = Int(Xmin + radius)
-        let yCenter = Int(Ymin + radius)
+        let xCenter = CGFloat(Xmin + radius)
+        let yCenter = CGFloat(Ymin + radius)
         let circle1 = UIBezierPath(arcCenter: CGPoint(x: xCenter, y: yCenter), radius: CGFloat(radius), startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2), clockwise: true)
+        print(xCenter, yCenter)
         //find the color of the center point
         let centerPoint = CGPoint(x:xCenter,y:yCenter)
         let centerColor = image?.getPixelColor(pos: centerPoint)
@@ -196,11 +197,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             
             while x < 3000{
                 
-                let point = CGPoint(x:Int.random(in:Xmin...Xmax),y:Int.random(in: Ymin...Ymax))
+                let point = CGPoint(x:Int.random(in:Int(Xmin)...Int(Xmax)),y:Int.random(in: Int(Ymin)...Int(Ymax)))
                 let color = image?.getPixelColor(pos: point)
                 var red: CGFloat = 0
                 var green: CGFloat = 0
                 var blue: CGFloat = 0
+                
                 //var alpha: CGFloat = 0
                 //defines the colors that are "black" and part of the pupil. Not all pixels in the pupil will be exactly black, rather, a varying range of dark shades that appear black.
                 
@@ -208,10 +210,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 green = color!.rgba.green
                 blue = color!.rgba.blue
                 //edge case
-                if circle1.contains(point) && (centerR + centerG + centerB == 0) {
-                    centerR = 0.03
-                    centerG = 0.03
-                    centerB = 0.03
+                if circle1.contains(point) && (centerR + centerG + centerB <= 0.02) {
+                    centerR = 0.05
+                    centerG = 0.05
+                    centerB = 0.05
                 }
                 
                 //adjust the values for contrast: right now 0.2 deviation from the color of the center pt

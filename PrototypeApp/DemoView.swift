@@ -57,6 +57,8 @@ class DemoView: UIView {
         //path.addLine(to: CGPoint(x: halfOfFrameW+radius, y: halfOfFrameH))
         path.addLine(to: CGPoint(x: self.frame.size.width, y: 0.0))
         
+        path.lineWidth = 2
+        
         // Close the path. This will create the last line automatically.
         path.close()
     }
@@ -68,6 +70,7 @@ class DemoView: UIView {
         //self.circle = UIBezierPath(ovalIn: CGRect(x:halfOfFrameW, y: halfOfFrameH, width: 45, height: 45))
         self.circle = UIBezierPath(ovalIn: CGRect(x:halfOfFrameW - halfOfFrameH, y: 0.0, width: self.frame.size.height, height:self.frame.size.height))
         UIColor.black.setStroke()
+        circle.lineWidth = 2
         circle.stroke()
         
     }
