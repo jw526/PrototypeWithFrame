@@ -5,10 +5,41 @@
 //  Created by New User on 4/4/19.
 //  Copyright © 2019 New User. All rights reserved.
 //
-
+/*
 import UIKit
+ class DemoView: UIView {
+ 
+    var circle = UIBezierPath()
+    var square = UIBezierPath()
+ 
+ 
+    func graph(){
+ 
+        UIColor.yellow.setStroke()
+        square.stroke()
+        circle.stroke()
+        
+    }
+ 
+    override func draw(_ rect: CGRect) {
 
-
+        self.square = UIBezierPath(rect: CGRect(x: self.frame.size.width/2 - self.frame.size.height/2,
+                                                y: 0.0,
+                                                width: self.frame.size.height,
+                                                height: self.frame.size.height))
+        self.circle = UIBezierPath(ovalIn: CGRect(x: self.frame.size.width/2 - self.frame.size.height/2,
+                                                  y: 0.0,
+                                                  width: self.frame.size.height,
+                                                  height: self.frame.size.height))
+     
+        graph()
+ 
+    }
+ 
+ 
+ }
+*/
+import UIKit
 class DemoView: UIView {
     
 
@@ -23,12 +54,13 @@ class DemoView: UIView {
     var circle = UIBezierPath()
     var radius = CGFloat(45.0)
     
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
-        self.backgroundColor = UIColor.init(red: 255.0, green: 255.0, blue: 255.0, alpha: 0)
+
+        self.backgroundColor = UIColor.init(red: 0, green: 0, blue: 0, alpha: 0)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
@@ -80,7 +112,7 @@ class DemoView: UIView {
         self.createCircle()
         // Specify the fill color and apply it to the path.
         //UIColor.orange.setFill()
-        UIColor.init(red: 255.0, green: 255.0, blue: 255.0, alpha: 0.0).setFill()
+       UIColor.init(red: 0, green: 0, blue: 0, alpha: 0.0).setFill()
         path.fill()
         
         // Specify a border (stroke) color.
@@ -89,3 +121,4 @@ class DemoView: UIView {
     }
     
 }
+

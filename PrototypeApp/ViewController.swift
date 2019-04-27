@@ -40,7 +40,6 @@ extension UIColor {
 }
 
 
-
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate {
     
 
@@ -50,11 +49,11 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     var demoView = DemoView()
     var pinchGesture = UIPinchGestureRecognizer()
     var panGesture = UIPanGestureRecognizer()
+    var currentValue:Float = 1
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //faceDetect1()
         
         // this code is for the filter (not yet integrated)
 //        if let image = UIImage(named: "pupil.jpg"){
@@ -68,7 +67,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
 
         
-        self.demoView = DemoView(frame: CGRect(x: self.view.frame.size.width/2, y: self.view.frame.size.height/2, width: 75, height: 75))
+        self.demoView = DemoView(frame: CGRect(x: self.view.frame.size.width/2-100.0/2, y: self.view.frame.size.height/2-100.0/2, width: 100.0, height: 100.0))
         
         
         
@@ -89,7 +88,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         self.view.addSubview(demoView)
 
-        
         
         }
 
@@ -113,6 +111,14 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     @IBOutlet weak var testLabel: UILabel!
     
+    @IBOutlet weak var slider: UISlider!
+    
+    @IBAction func sliderMoved(_ slider: UISlider){
+        currentValue = slider.value
+        demoView.transform = CGAffineTransform(scaleX: CGFloat(currentValue), y: CGFloat(currentValue))
+       // CGAffineTransform transform =  (CGAffineTransformIdentity, slider.value, slider.value);
+    }
+    
     // code to access camera: take picture button
     @IBAction func camera(_ sender: Any) {
         if UIImagePickerController.isSourceTypeAvailable(.camera){
@@ -120,6 +126,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             imagePicker.delegate = self
             imagePicker.sourceType = .camera;
             imagePicker.allowsEditing = true
+            //imagePicker.cameraOverlayView = demoView
             self.present(imagePicker, animated: true, completion: nil)
         }
     }
@@ -168,19 +175,23 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         var o = 0
         var x = 0
         let image = pupil.image
+        print("frame Xmin: ", pupil.frame.minX, "frame Ymin: ", pupil.frame.minY)
 
-        //let frameSquare = UIView(frame: demoView.convert(demoView.bounds, to: pupil.inputView)) //UI View out of square's location on image frame
-        let Xmin = CGFloat(demoView.frame.minX)
-        let Ymin = CGFloat(demoView.frame.minY)
-        let Xmax = CGFloat(demoView.frame.maxX)
-        let Ymax = CGFloat(demoView.frame.maxY)
-        let radius = CGFloat(demoView.frame.size.width)/2
+        let frameSquare = UIView(frame: demoView.convert(demoView.frame, to: pupil.inputView)) //UI View out of square's location on image frame . demoView.bounds
+        let Xmin = Int(frameSquare.frame.minX)
+        let Ymin = Int(frameSquare.frame.minY)
+        let Xmax = Int(frameSquare.frame.maxX)
+        let Ymax = Int(frameSquare.frame.maxY)
+        let radius = Int(frameSquare.frame.size.width)/2
+        
 //        let Xmin = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).minX)
 //        let Ymin = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).minY)
 //        let Xmax = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).maxX)
 //        let Ymax = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).maxY)
 //        let radius = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).size.width)/2
-        print(Xmin, Ymin, Xmax, Ymax, radius)
+        print(Xmin, Ymin, Xmax, Ymax)
+        print(pupil.frame)
+        
         
         let xCenter = CGFloat(Xmin + radius)
         let yCenter = CGFloat(Ymin + radius)
@@ -191,13 +202,14 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let centerColor = image?.getPixelColor(pos: centerPoint)
         if centerColor == nil {piCalc.text = "please select an image"}
         else{
+            
             var centerR: CGFloat = centerColor!.rgba.red
             var centerG: CGFloat = centerColor!.rgba.green
             var centerB: CGFloat = centerColor!.rgba.blue
             
             while x < 3000{
                 
-                let point = CGPoint(x:Int.random(in:Int(Xmin)...Int(Xmax)),y:Int.random(in: Int(Ymin)...Int(Ymax)))
+                let point = CGPoint(x:Int.random(in:Xmin...Xmax),y:Int.random(in:Ymin...Ymax))
                 let color = image?.getPixelColor(pos: point)
                 var red: CGFloat = 0
                 var green: CGFloat = 0
@@ -231,6 +243,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                     o += 1}
                 
                 x += 1}
+            
             let ratio = 4 * Float(i)/Float(x)
             
             //            print(color)
@@ -238,6 +251,29 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             piCalc.text = String(ratio)
         }
         
+    }
+    
+    func calPi (Xmin: Int, Ymin: Int, Xmax: Int, Ymax: Int) -> Float {
+        let image = pupil.image
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        let total = (Xmax-Xmin)*(Ymax-Ymin)
+        var cnt = 0
+        for i in Xmin...Xmax {
+            for j in Ymin...Ymax{
+                var point = CGPoint (x: i, y: j)
+                var color = image?.getPixelColor(pos: point)
+                red = color!.rgba.red
+                green = color!.rgba.green
+                blue = color!.rgba.blue
+                var gray = (0.3 * red) + (0.59 * green) + (0.11 * blue)
+                if gray < 0.3 {
+                    cnt += 1
+                }
+            }
+        }
+        return 4 * Float(cnt)/Float(total)
     }
     /*
     @IBAction func calculate(_ sender: Any) {
