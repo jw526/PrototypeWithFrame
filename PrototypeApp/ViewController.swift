@@ -11,7 +11,7 @@ import UIKit
 
 //code to identify color of pixels in RGB
 extension UIImage {
-    public func getPixelColor(pos: CGPoint) -> UIColor {
+    public func getPixelColor1(pos: CGPoint) -> UIColor {
         
         let pixelData = self.cgImage!.dataProvider!.data
         let data: UnsafePointer<UInt8> = CFDataGetBytePtr(pixelData)
@@ -25,6 +25,54 @@ extension UIImage {
         
         return UIColor(red: r, green: g, blue: b, alpha: a)
         }
+    
+    func getPixelColor2(pos: CGPoint) -> UIColor {
+        
+        guard let cgImage = cgImage, let pixelData = cgImage.dataProvider?.data else { return UIColor.clear }
+        let data: UnsafePointer<UInt8> = CFDataGetBytePtr(pixelData)
+        
+        let bytesPerPixel = cgImage.bitsPerPixel / 8
+        // adjust the pixels to constrain to be within the width/height of the image
+        let y = pos.y > 0 ? pos.y - 1 : 0
+        let x = pos.x > 0 ? pos.x - 1 : 0
+        let pixelInfo = ((Int(self.size.width) * Int(y)) + Int(x)) * bytesPerPixel
+        
+        let r = CGFloat(data[pixelInfo]) / CGFloat(255.0)
+        let g = CGFloat(data[pixelInfo+1]) / CGFloat(255.0)
+        let b = CGFloat(data[pixelInfo+2]) / CGFloat(255.0)
+        let a = CGFloat(data[pixelInfo+3]) / CGFloat(255.0)
+        
+        return UIColor(red: r, green: g, blue: b, alpha: a)
+    }
+    
+    func getPixelColor(_ image:UIImage, _ point: CGPoint) -> UIColor {
+        let cgImage : CGImage = image.cgImage!
+        guard let pixelData = CGDataProvider(data: (cgImage.dataProvider?.data)!)?.data else {
+            return UIColor.clear
+        }
+        let data = CFDataGetBytePtr(pixelData)!
+        let x = Int(point.x)
+        let y = Int(point.y)
+        let index = Int(image.size.width) * y + x
+        let expectedLengthA = Int(image.size.width * image.size.height)
+        let expectedLengthGrayScale = 2 * expectedLengthA
+        let expectedLengthRGB = 3 * expectedLengthA
+        let expectedLengthRGBA = 4 * expectedLengthA
+        let numBytes = CFDataGetLength(pixelData)
+        switch numBytes {
+        case expectedLengthA:
+            return UIColor(red: 0, green: 0, blue: 0, alpha: CGFloat(data[index])/255.0)
+        case expectedLengthGrayScale:
+            return UIColor(white: CGFloat(data[2 * index]) / 255.0, alpha: CGFloat(data[2 * index + 1]) / 255.0)
+        case expectedLengthRGB:
+            return UIColor(red: CGFloat(data[3*index])/255.0, green: CGFloat(data[3*index+1])/255.0, blue: CGFloat(data[3*index+2])/255.0, alpha: 1.0)
+        case expectedLengthRGBA:
+            return UIColor(red: CGFloat(data[4*index])/255.0, green: CGFloat(data[4*index+1])/255.0, blue: CGFloat(data[4*index+2])/255.0, alpha: CGFloat(data[4*index+3])/255.0)
+        default:
+            // unsupported format
+            return UIColor.clear
+        }
+    }
 }
 // get RGB value from UIColor
 extension UIColor {
@@ -36,6 +84,26 @@ extension UIColor {
         getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         
         return (red, green, blue, alpha)
+    }
+}
+
+extension UIView {
+    
+    // Using a function since `var image` might conflict with an existing variable
+    // (like on `UIImageView`)
+    func asImage() -> UIImage {
+        if #available(iOS 10.0, *) {
+            let renderer = UIGraphicsImageRenderer(bounds: bounds)
+            return renderer.image { rendererContext in
+                layer.render(in: rendererContext.cgContext)
+            }
+        } else {
+            UIGraphicsBeginImageContext(self.frame.size)
+            self.layer.render(in:UIGraphicsGetCurrentContext()!)
+            let image = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            return UIImage(cgImage: image!.cgImage!)
+        }
     }
 }
 
@@ -176,30 +244,28 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         var x = 0
         let image = pupil.image
         print("frame Xmin: ", pupil.frame.minX, "frame Ymin: ", pupil.frame.minY)
-
-        let frameSquare = UIView(frame: demoView.convert(demoView.frame, to: pupil.inputView)) //UI View out of square's location on image frame . demoView.bounds
-        let Xmin = Int(frameSquare.frame.minX)
-        let Ymin = Int(frameSquare.frame.minY)
-        let Xmax = Int(frameSquare.frame.maxX)
-        let Ymax = Int(frameSquare.frame.maxY)
-        let radius = Int(frameSquare.frame.size.width)/2
         
-//        let Xmin = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).minX)
-//        let Ymin = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).minY)
-//        let Xmax = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).maxX)
-//        let Ymax = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).maxY)
-//        let radius = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).size.width)/2
-        print(Xmin, Ymin, Xmax, Ymax)
-        print(pupil.frame)
+        //let frameSquare = UIView(frame: demoView.convert(demoView.frame, to: pupil.inputView)) //UI View out of square's location on image frame . demoView.bounds
+        let Xmin = Int(demoView.frame.minX) - 67//Int(pupil.frame.minX)
+        let Ymin = Int(demoView.frame.minY) - 235//Int(pupil.frame.minY)
+        let Xmax = Int(demoView.frame.maxX) - 67//Int(pupil.frame.minX)
+        let Ymax = Int(demoView.frame.maxY) - 235//Int(pupil.frame.minY)
+        let radius = Int(demoView.frame.size.width)/2
+        
+        //        let Xmin = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).minX)
+        //        let Ymin = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).minY)
+        //        let Xmax = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).maxX)
+        //        let Ymax = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).maxY)
+        //        let radius = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).size.width)/2
         
         
         let xCenter = CGFloat(Xmin + radius)
         let yCenter = CGFloat(Ymin + radius)
         let circle1 = UIBezierPath(arcCenter: CGPoint(x: xCenter, y: yCenter), radius: CGFloat(radius), startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2), clockwise: true)
-        print(xCenter, yCenter)
+
         //find the color of the center point
         let centerPoint = CGPoint(x:xCenter,y:yCenter)
-        let centerColor = image?.getPixelColor(pos: centerPoint)
+        let centerColor = image?.getPixelColor(image!, centerPoint)
         if centerColor == nil {piCalc.text = "please select an image"}
         else{
             
@@ -210,7 +276,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             while x < 3000{
                 
                 let point = CGPoint(x:Int.random(in:Xmin...Xmax),y:Int.random(in:Ymin...Ymax))
-                let color = image?.getPixelColor(pos: point)
+                let color = image?.getPixelColor(image!, point)
                 var red: CGFloat = 0
                 var green: CGFloat = 0
                 var blue: CGFloat = 0
@@ -231,10 +297,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 //adjust the values for contrast: right now 0.2 deviation from the color of the center pt
                 //gray scale transformation: New grayscale image = ( (0.3 * R) + (0.59 * G) + (0.11 * B) ).
                 
-                if circle1.contains(point) && (red + green + blue <= 1.2 * (centerR + centerG + centerB))
-//                    red < 1.3 * centerR &&
-//                    green < 1.3 * centerG &&
-//                    blue < 1.3 * centerB {
+                if circle1.contains(point) && (red + green + blue <= 1.4 * (centerR + centerG + centerB))
+                    //                    red < 1.3 * centerR &&
+                    //                    green < 1.3 * centerG &&
+                    //                    blue < 1.3 * centerB {
                     //print(color)
                     //print(point)
                 {
@@ -253,28 +319,30 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
     }
     
-    func calPi (Xmin: Int, Ymin: Int, Xmax: Int, Ymax: Int) -> Float {
-        let image = pupil.image
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        let total = (Xmax-Xmin)*(Ymax-Ymin)
-        var cnt = 0
-        for i in Xmin...Xmax {
-            for j in Ymin...Ymax{
-                var point = CGPoint (x: i, y: j)
-                var color = image?.getPixelColor(pos: point)
-                red = color!.rgba.red
-                green = color!.rgba.green
-                blue = color!.rgba.blue
-                var gray = (0.3 * red) + (0.59 * green) + (0.11 * blue)
-                if gray < 0.3 {
-                    cnt += 1
-                }
-            }
-        }
-        return 4 * Float(cnt)/Float(total)
-    }
+    
+    
+//    func calPi (Xmin: Int, Ymin: Int, Xmax: Int, Ymax: Int) -> Float {
+//        let image = pupil.image
+//        var red: CGFloat = 0
+//        var green: CGFloat = 0
+//        var blue: CGFloat = 0
+//        let total = (Xmax-Xmin)*(Ymax-Ymin)
+//        var cnt = 0
+//        for i in Xmin...Xmax {
+//            for j in Ymin...Ymax{
+//                var point = CGPoint (x: i, y: j)
+//                var color = image?.getPixelColor(pos: point)
+//                red = color!.rgba.red
+//                green = color!.rgba.green
+//                blue = color!.rgba.blue
+//                var gray = (0.3 * red) + (0.59 * green) + (0.11 * blue)
+//                if gray < 0.3 {
+//                    cnt += 1
+//                }
+//            }
+//        }
+//        return 4 * Float(cnt)/Float(total)
+//    }
     /*
     @IBAction func calculate(_ sender: Any) {
         var i = 0
@@ -359,33 +427,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
 
 
-    
-    // face detection using CI Image library
-    func faceDetect() {
-        //get the image from image view
-        let faceImage = CIImage(image: pupil.image!)!//unwrap imageview
-        
-        //set up detector
-        let accuracy = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
-        let faceDetetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: accuracy)
-        let faces = faceDetetector?.features(in: faceImage)
-        
-        if !(faces!.isEmpty) { //if faces is not empty, has features
-            for face in faces as! [CIFaceFeature] {
-                var hasEyeVisible = "An eye is visible"
-                    
-                if (!face.hasLeftEyePosition) || (!face.hasRightEyePosition) //no eyes
-                {
-                    hasEyeVisible = "No eyes found in photo"
-                }
-                
-                testLabel.text = hasEyeVisible
-            }
-            
-            
-        }
-        
-    }
     
     
 }

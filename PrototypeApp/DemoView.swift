@@ -101,7 +101,7 @@ class DemoView: UIView {
         
         //self.circle = UIBezierPath(ovalIn: CGRect(x:halfOfFrameW, y: halfOfFrameH, width: 45, height: 45))
         self.circle = UIBezierPath(ovalIn: CGRect(x:halfOfFrameW - halfOfFrameH, y: 0.0, width: self.frame.size.height, height:self.frame.size.height))
-        UIColor.black.setStroke()
+        UIColor.blue.setStroke()
         circle.lineWidth = 2
         circle.stroke()
         
@@ -116,7 +116,7 @@ class DemoView: UIView {
         path.fill()
         
         // Specify a border (stroke) color.
-        UIColor.black.setStroke()
+        UIColor.blue.setStroke()
         path.stroke()
     }
     
