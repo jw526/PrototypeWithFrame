@@ -5,40 +5,7 @@
 //  Created by New User on 4/4/19.
 //  Copyright © 2019 New User. All rights reserved.
 //
-/*
-import UIKit
- class DemoView: UIView {
- 
-    var circle = UIBezierPath()
-    var square = UIBezierPath()
- 
- 
-    func graph(){
- 
-        UIColor.yellow.setStroke()
-        square.stroke()
-        circle.stroke()
-        
-    }
- 
-    override func draw(_ rect: CGRect) {
 
-        self.square = UIBezierPath(rect: CGRect(x: self.frame.size.width/2 - self.frame.size.height/2,
-                                                y: 0.0,
-                                                width: self.frame.size.height,
-                                                height: self.frame.size.height))
-        self.circle = UIBezierPath(ovalIn: CGRect(x: self.frame.size.width/2 - self.frame.size.height/2,
-                                                  y: 0.0,
-                                                  width: self.frame.size.height,
-                                                  height: self.frame.size.height))
-     
-        graph()
- 
-    }
- 
- 
- }
-*/
 import UIKit
 class DemoView: UIView {
     

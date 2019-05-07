@@ -11,6 +11,7 @@ import UIKit
 
 //code to identify color of pixels in RGB
 extension UIImage {
+    //this function give the best result
     public func getPixelColor1(pos: CGPoint) -> UIColor {
         
         let pixelData = self.cgImage!.dataProvider!.data
@@ -44,7 +45,7 @@ extension UIImage {
         
         return UIColor(red: r, green: g, blue: b, alpha: a)
     }
-    
+    // works for different image formats
     func getPixelColor(_ image:UIImage, _ point: CGPoint) -> UIColor {
         let cgImage : CGImage = image.cgImage!
         guard let pixelData = CGDataProvider(data: (cgImage.dataProvider?.data)!)?.data else {
@@ -184,7 +185,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBAction func sliderMoved(_ slider: UISlider){
         currentValue = slider.value
         demoView.transform = CGAffineTransform(scaleX: CGFloat(currentValue), y: CGFloat(currentValue))
-       // CGAffineTransform transform =  (CGAffineTransformIdentity, slider.value, slider.value);
     }
     
     // code to access camera: take picture button
@@ -194,6 +194,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             imagePicker.delegate = self
             imagePicker.sourceType = .camera;
             imagePicker.allowsEditing = true
+            //UIImageWriteToSavedPhotosAlbum(pupil.image!, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil) //save image
             //imagePicker.cameraOverlayView = demoView
             self.present(imagePicker, animated: true, completion: nil)
         }
@@ -227,13 +228,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         let image = info[UIImagePickerController.InfoKey.editedImage] as! UIImage
         pupil.image = image
-        //UIImageWriteToSavedPhotosAlbum(pupil.image!, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil) //save image
         dismiss(animated:true, completion: nil)
     }
     
-
-//defines the area of the circle. The loop checks whether or not the points are within this
-
     
     //defines the colors that are "black" and part of the pupil. Not all pixels in the pupil will be exactly black, rather, a varying range of dark shades that appear black.
 // calculate pi button. Checks "x" number of pixels. "Black" points inside the circle are added to i, others are added to o. Divides to get ratio and displays this ratio.
@@ -242,67 +239,61 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         var i = 0
         var o = 0
         var x = 0
-        let image = pupil.image
-        print("frame Xmin: ", pupil.frame.minX, "frame Ymin: ", pupil.frame.minY)
-        
-        //let frameSquare = UIView(frame: demoView.convert(demoView.frame, to: pupil.inputView)) //UI View out of square's location on image frame . demoView.bounds
-        let Xmin = Int(demoView.frame.minX) - 67//Int(pupil.frame.minX)
-        let Ymin = Int(demoView.frame.minY) - 235//Int(pupil.frame.minY)
-        let Xmax = Int(demoView.frame.maxX) - 67//Int(pupil.frame.minX)
-        let Ymax = Int(demoView.frame.maxY) - 235//Int(pupil.frame.minY)
-        let radius = Int(demoView.frame.size.width)/2
-        
-        //        let Xmin = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).minX)
-        //        let Ymin = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).minY)
-        //        let Xmax = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).maxX)
-        //        let Ymax = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).maxY)
-        //        let radius = Int(pupil.frame(forAlignmentRect: demoView.convert(demoView.bounds, to: pupil.inputView)).size.width)/2
-        
-        
-        let xCenter = CGFloat(Xmin + radius)
-        let yCenter = CGFloat(Ymin + radius)
-        let circle1 = UIBezierPath(arcCenter: CGPoint(x: xCenter, y: yCenter), radius: CGFloat(radius), startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2), clockwise: true)
-
-        //find the color of the center point
-        let centerPoint = CGPoint(x:xCenter,y:yCenter)
-        let centerColor = image?.getPixelColor(image!, centerPoint)
-        if centerColor == nil {piCalc.text = "please select an image"}
+        let image1 = pupil.image
+        let image = pupil.asImage()
+        if image1 == nil {piCalc.text = "please select an image"}
         else{
+        
+            //let frameSquare = UIView(frame: demoView.convert(demoView.frame, to: pupil.inputView)) //UI View out of square's location on image frame . demoView.bounds
             
-            var centerR: CGFloat = centerColor!.rgba.red
-            var centerG: CGFloat = centerColor!.rgba.green
-            var centerB: CGFloat = centerColor!.rgba.blue
+            //adjust coordinates
+            let Xmin = Int(demoView.frame.minX) - Int(pupil.frame.minX)
+            let Ymin = Int(demoView.frame.minY) - Int(pupil.frame.minY)
+            let Xmax = Int(demoView.frame.maxX) - Int(pupil.frame.minX)
+            let Ymax = Int(demoView.frame.maxY) - Int(pupil.frame.minY)
+            let radius = Int(demoView.frame.size.width)/2
+            
+            
+            let xCenter = CGFloat(Xmin + radius)
+            let yCenter = CGFloat(Ymin + radius)
+            let circle1 = UIBezierPath(arcCenter: CGPoint(x: xCenter, y: yCenter), radius: CGFloat(radius), startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2), clockwise: true)
+
+            //find the color of the center point
+            let centerPoint = CGPoint(x:xCenter,y:yCenter)
+            let centerColor = image.getPixelColor1(pos: centerPoint)
+            
+            var centerR: CGFloat = centerColor.rgba.red
+            var centerG: CGFloat = centerColor.rgba.green
+            var centerB: CGFloat = centerColor.rgba.blue
             
             while x < 3000{
                 
                 let point = CGPoint(x:Int.random(in:Xmin...Xmax),y:Int.random(in:Ymin...Ymax))
-                let color = image?.getPixelColor(image!, point)
+                let color = image.getPixelColor1(pos: point)
                 var red: CGFloat = 0
                 var green: CGFloat = 0
                 var blue: CGFloat = 0
                 
-                //var alpha: CGFloat = 0
                 //defines the colors that are "black" and part of the pupil. Not all pixels in the pupil will be exactly black, rather, a varying range of dark shades that appear black.
                 
-                red = color!.rgba.red
-                green = color!.rgba.green
-                blue = color!.rgba.blue
-                //edge case
+                red = color.rgba.red
+                green = color.rgba.green
+                blue = color.rgba.blue
+                //edge case when the center is pure black
                 if circle1.contains(point) && (centerR + centerG + centerB <= 0.02) {
                     centerR = 0.05
                     centerG = 0.05
                     centerB = 0.05
                 }
                 
-                //adjust the values for contrast: right now 0.2 deviation from the color of the center pt
+                //adjust the values for contrast: right now 0.3 deviation from the color of the center pt
                 //gray scale transformation: New grayscale image = ( (0.3 * R) + (0.59 * G) + (0.11 * B) ).
                 
-                if circle1.contains(point) && (red + green + blue <= 1.4 * (centerR + centerG + centerB))
+                if circle1.contains(point) && (red + green + blue <= 1.3 * (centerR + centerG + centerB))
                     //                    red < 1.3 * centerR &&
                     //                    green < 1.3 * centerG &&
                     //                    blue < 1.3 * centerB {
-                    //print(color)
-                    //print(point)
+
                 {
                     i += 1}
                 else{
@@ -311,123 +302,11 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 x += 1}
             
             let ratio = 4 * Float(i)/Float(x)
-            
-            //            print(color)
-            //            print(point)
+
             piCalc.text = String(ratio)
         }
         
     }
-    
-    
-    
-//    func calPi (Xmin: Int, Ymin: Int, Xmax: Int, Ymax: Int) -> Float {
-//        let image = pupil.image
-//        var red: CGFloat = 0
-//        var green: CGFloat = 0
-//        var blue: CGFloat = 0
-//        let total = (Xmax-Xmin)*(Ymax-Ymin)
-//        var cnt = 0
-//        for i in Xmin...Xmax {
-//            for j in Ymin...Ymax{
-//                var point = CGPoint (x: i, y: j)
-//                var color = image?.getPixelColor(pos: point)
-//                red = color!.rgba.red
-//                green = color!.rgba.green
-//                blue = color!.rgba.blue
-//                var gray = (0.3 * red) + (0.59 * green) + (0.11 * blue)
-//                if gray < 0.3 {
-//                    cnt += 1
-//                }
-//            }
-//        }
-//        return 4 * Float(cnt)/Float(total)
-//    }
-    /*
-    @IBAction func calculate(_ sender: Any) {
-        var i = 0
-        var o = 0
-        var x = 0
-        while x < 3000{
-            let image = pupil.image
-            //let Xmin = Int(pupil.frame.minX)
-            //let Ymin = Int(pupil.frame.minY)
-            //let Xmax = Int(pupil.frame.maxX)
-            //let Ymax = Int(pupil.frame.maxY)
-            
-            
-            //demo view contains square
-            let frameSquare = UIView(frame: demoView.convert(demoView.bounds, to: pupil.inputView)) //UI View out of square's location on image frame
-            let Xmin = Int(frameSquare.frame.minX) //where the square begins
-            let Ymin = Int(frameSquare.frame.minY)
-            let Xmax = Int(frameSquare.frame.maxX)
-            let Ymax = Int(frameSquare.frame.maxY) //where the square ends
-            let radius = Int(frameSquare.frame.size.width)/2
-            let xCenter = Int(Xmin + radius)
-            let yCenter = Int(Ymin + radius)
-            
-            let circle1 = UIBezierPath(arcCenter: CGPoint(x: xCenter, y: yCenter), radius: CGFloat(radius), startAngle: CGFloat(0), endAngle: CGFloat(Double.pi * 2), clockwise: true)
-            let point = CGPoint(x:Int.random(in:Xmin...Xmax),y:Int.random(in: Ymin...Ymax))
-            let color = image?.getPixelColor(pos: point)
-            var red: CGFloat = 0
-            var green: CGFloat = 0
-            var blue: CGFloat = 0
-            //var alpha: CGFloat = 0
-            //defines the colors that are "black" and part of the pupil. Not all pixels in the pupil will be exactly black, rather, a varying range of dark shades that appear black.
-
-            red = color!.rgba.red
-            green = color!.rgba.green
-            blue = color!.rgba.blue
-            //adjust the values for shades of blackness
-            if circle1.contains(point) && red < 0.15 && green < 0.15 && blue < 0.15{
-                //print(color)
-                //print(point)
-                
-                i += 1}
-            else{
-                o += 1}
-            
-            x += 1}
-        let ratio = 4 * Float(i)/Float(x)
-        
-        //let difference = Double(pupil.frame.origin.x - demoView.frame.origin.x)
-        print(demoView.frame)
-//            print(color)
-//            print(point)
-            piCalc.text = String(ratio)
-        
-   
-    } */
-    
-    func faceDetect1(){
-        if let inputImage = UIImage(named: "test1.jpg") {
-            let ciImage = CIImage(cgImage: inputImage.cgImage!)
-            
-            let options = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
-            let faceDetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: options)!
-            
-            let faces = faceDetector.features(in: ciImage)
-            
-            if let face = faces.first as? CIFaceFeature {
-                print("Found face at \(face.bounds)")
-                
-                if face.hasLeftEyePosition {
-                    print("Found left eye at \(face.leftEyePosition)")
-                }
-                
-                if face.hasRightEyePosition {
-                    print("Found right eye at \(face.rightEyePosition)")
-                }
-                
-                if face.hasMouthPosition {
-                    print("Found mouth at \(face.mouthPosition)")
-                }
-            }
-        }
-    }
-
-
-    
     
 }
 
