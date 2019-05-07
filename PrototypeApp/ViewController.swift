@@ -240,6 +240,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         var o = 0
         var x = 0
         let image1 = pupil.image
+        //improve calculation speed
         let image = pupil.asImage()
         if image1 == nil {piCalc.text = "please select an image"}
         else{
@@ -260,7 +261,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
 
             //find the color of the center point
             let centerPoint = CGPoint(x:xCenter,y:yCenter)
-            let centerColor = image.getPixelColor1(pos: centerPoint)
+            let centerColor = image.getPixelColor(image, centerPoint)
             
             var centerR: CGFloat = centerColor.rgba.red
             var centerG: CGFloat = centerColor.rgba.green
@@ -269,7 +270,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             while x < 3000{
                 
                 let point = CGPoint(x:Int.random(in:Xmin...Xmax),y:Int.random(in:Ymin...Ymax))
-                let color = image.getPixelColor1(pos: point)
+                let color = image.getPixelColor(image, point)
                 var red: CGFloat = 0
                 var green: CGFloat = 0
                 var blue: CGFloat = 0
