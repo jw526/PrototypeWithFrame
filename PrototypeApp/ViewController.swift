@@ -239,10 +239,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         var i = 0
         var o = 0
         var x = 0
-        let image1 = pupil.image
-        //improve calculation speed
-        let image = pupil.asImage()
-        if image1 == nil {piCalc.text = "please select an image"}
+        let image = pupil.image
+
+        if image == nil {piCalc.text = "please select an image"}
         else{
         
             //let frameSquare = UIView(frame: demoView.convert(demoView.frame, to: pupil.inputView)) //UI View out of square's location on image frame . demoView.bounds
@@ -261,7 +260,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
 
             //find the color of the center point
             let centerPoint = CGPoint(x:xCenter,y:yCenter)
-            let centerColor = image.getPixelColor(image, centerPoint)
+            let centerColor = image!.getPixelColor1(pos: centerPoint)
             
             var centerR: CGFloat = centerColor.rgba.red
             var centerG: CGFloat = centerColor.rgba.green
@@ -270,7 +269,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             while x < 3000{
                 
                 let point = CGPoint(x:Int.random(in:Xmin...Xmax),y:Int.random(in:Ymin...Ymax))
-                let color = image.getPixelColor(image, point)
+                let color = image!.getPixelColor1(pos: point)
                 var red: CGFloat = 0
                 var green: CGFloat = 0
                 var blue: CGFloat = 0
@@ -290,7 +289,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 //adjust the values for contrast: right now 0.3 deviation from the color of the center pt
                 //gray scale transformation: New grayscale image = ( (0.3 * R) + (0.59 * G) + (0.11 * B) ).
                 
-                if circle1.contains(point) && (red + green + blue <= 1.3 * (centerR + centerG + centerB))
+                if circle1.contains(point) && (red + green + blue <= 1.4 * (centerR + centerG + centerB))
                     //                    red < 1.3 * centerR &&
                     //                    green < 1.3 * centerG &&
                     //                    blue < 1.3 * centerB {
